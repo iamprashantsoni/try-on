@@ -34,24 +34,25 @@ const directionalLight = new THREE.DirectionalLight(0xffffff, 0.7);
 directionalLight.position.set(0, 1, 1);
 scene.add(directionalLight);
 
-// Create chain group (5 links for demo)
+// Create chain group with linked spheres representing chain links
 const chainGroup = new THREE.Group();
-const linkGeometry = new THREE.TorusGeometry(0.1, 0.025, 16, 100);
+const linkCount = 8;
+const sphereGeometry = new THREE.SphereGeometry(0.1, 32, 32);
 const goldMaterial = new THREE.MeshStandardMaterial({
   color: 0xD4AF37,
   metalness: 1,
-  roughness: 0.3,
+  roughness: 0.25,
   emissive: 0x333300,
   emissiveIntensity: 0.2,
 });
-const linkCount = 5;
+
 for (let i = 0; i < linkCount; i++) {
-  const linkMesh = new THREE.Mesh(linkGeometry, goldMaterial);
-  linkMesh.position.y = -i * 0.2;
-  linkMesh.rotation.x = Math.PI / 2;
-  linkMesh.rotation.z = i % 2 === 0 ? 0 : Math.PI / 4;
-  chainGroup.add(linkMesh);
+  const sphere = new THREE.Mesh(sphereGeometry, goldMaterial);
+  sphere.position.x = (i % 2 === 0 ? 0 : 0.18);
+  sphere.position.y = -i * 0.22;
+  chainGroup.add(sphere);
 }
+
 scene.add(chainGroup);
 
 // Position camera
@@ -66,10 +67,8 @@ window.addEventListener('resize', () => {
 
 // Convert normalized face coordinates to Three.js coords
 function convertToThreeCoords(xNorm, yNorm) {
-  // xNorm, yNorm are between 0 and 1 (origin top-left)
-  // Convert to centered coordinate system (-1 to 1)
   const x = (xNorm - 0.5) * 2;
-  const y = -(yNorm - 0.5) * 2; // invert Y axis
+  const y = -(yNorm - 0.5) * 2;
   return { x, y };
 }
 
@@ -83,30 +82,23 @@ async function main() {
     if (predictions.length > 0) {
       const keypoints = predictions[0].scaledMesh;
 
-      // Neck area approximation:
-      // Use points below chin: Take average bottom of jaw points (landmark indices 152 and 148 are around chin)
-      const jawLeft = keypoints[234]; // left jaw
-      const jawRight = keypoints[454]; // right jaw
-      const chin = keypoints[152]; // chin point
+      // Approximate neck position using jaw landmarks
+      const jawLeft = keypoints[234];
+      const jawRight = keypoints[454];
+      const chin = keypoints[152];
       
-      // Calculate midpoint between left and right jaw
       const neckX = (jawLeft[0] + jawRight[0]) / 2;
       const neckY = (jawLeft[1] + jawRight[1]) / 2 + (chin[1] - ((jawLeft[1] + jawRight[1]) / 2)) * 0.5;
 
-      // Normalize coordinates (video width & height 640 x 480 from setup)
       const normX = neckX / video.videoWidth;
       const normY = neckY / video.videoHeight;
 
-      // Convert normalized to three.js coordinates (adjust Z for depth)
       const pos = convertToThreeCoords(normX, normY);
 
-      // Update chain 3D object position smoothly
+      // Smooth chain position update
       chainGroup.position.x += (pos.x - chainGroup.position.x) * 0.2;
-      chainGroup.position.y += (pos.y - 0.8 - chainGroup.position.y) * 0.2; // slightly below chin
+      chainGroup.position.y += (pos.y - 0.8 - chainGroup.position.y) * 0.2;
       chainGroup.position.z = 0;
-
-      // Optionally add subtle rotation based on face tilt using keypoints
-      
     }
     renderer.render(scene, camera);
     requestAnimationFrame(detectFace);
