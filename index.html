@@ -218,16 +218,9 @@
     let isProcessing = false;
     let currentLipColor = '#e4002b';
     
-    // Predefined lip landmarks indices for FaceMesh
-    const LIP_TOP = {
-      outer: [61, 185, 40, 39, 37, 0, 267, 269, 270, 409, 291],
-      inner: [78, 191, 80, 81, 82, 13, 312, 311, 310, 415, 308]
-    };
-    
-    const LIP_BOTTOM = {
-      outer: [146, 91, 181, 84, 17, 314, 405, 320, 307, 375, 321],
-      inner: [95, 88, 178, 87, 14, 317, 402, 318, 324, 308, 415]
-    };
+    // Lip landmarks indices for FaceMesh (468 points)
+    const LIP_OUTER = [61, 185, 40, 39, 37, 0, 267, 269, 270, 409, 291, 375, 321, 308, 324, 318, 402, 317, 14, 87, 178, 88, 95];
+    const LIP_INNER = [78, 191, 80, 81, 82, 13, 312, 311, 310, 415, 308, 324, 318, 402, 317, 14, 87, 178, 88, 95];
     
     // Initialize the application
     async function init() {
@@ -237,7 +230,7 @@
         
         // Load the face landmarks detection model
         model = await faceLandmarksDetection.load(
-          faceLandmarksDetection.SupportedPackages.mediapipeFacemesh,
+          faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh,
           { maxFaces: 1 }
         );
         
@@ -305,12 +298,11 @@
           const predictions = await model.estimateFaces({
             input: video,
             returnTensors: false,
-            flipHorizontal: false,
-            predictIrises: true
+            flipHorizontal: false
           });
           
           if (predictions.length > 0) {
-            const keypoints = predictions[0].scaledMesh;
+            const keypoints = predictions[0].keypoints;
             
             // Draw lipstick overlay
             drawLipsOverlay(keypoints, currentLipColor);
@@ -326,15 +318,15 @@
     
     // Draw lipstick overlay
     function drawLipsOverlay(keypoints, color) {
-      // Draw upper lip
-      drawLipSection(keypoints, LIP_TOP.outer, LIP_TOP.inner, color);
+      // Draw outer lip
+      drawLipSection(keypoints, LIP_OUTER, color, 0.7);
       
-      // Draw lower lip
-      drawLipSection(keypoints, LIP_BOTTOM.outer, LIP_BOTTOM.inner, color);
+      // Draw inner lip with slightly different color for dimension
+      drawLipSection(keypoints, LIP_INNER, adjustColorBrightness(color, 15), 0.6);
     }
     
-    // Draw a lip section (upper or lower)
-    function drawLipSection(keypoints, outerPoints, innerPoints, color) {
+    // Draw a lip section
+    function drawLipSection(keypoints, points, color, alpha) {
       ctx.save();
       
       // Create a gradient for more realistic lips
@@ -343,51 +335,24 @@
       gradient.addColorStop(1, adjustColorBrightness(color, -20));
       
       ctx.fillStyle = gradient;
-      ctx.globalAlpha = 0.7;
+      ctx.globalAlpha = alpha;
       ctx.globalCompositeOperation = 'source-over';
       
-      // Draw outer lip path
+      // Draw lip path
       ctx.beginPath();
-      for (let i = 0; i < outerPoints.length; i++) {
-        const pointIdx = outerPoints[i];
-        const [x, y] = keypoints[pointIdx];
+      for (let i = 0; i < points.length; i++) {
+        const pointIdx = points[i];
+        const {x, y} = keypoints[pointIdx];
         
         if (i === 0) {
           ctx.moveTo(canvas.width - x, y);
         } else {
           ctx.lineTo(canvas.width - x, y);
         }
-      }
-      
-      // Draw inner lip path (in reverse)
-      for (let i = innerPoints.length - 1; i >= 0; i--) {
-        const pointIdx = innerPoints[i];
-        const [x, y] = keypoints[pointIdx];
-        ctx.lineTo(canvas.width - x, y);
       }
       
       ctx.closePath();
       ctx.fill();
-      
-      // Add a highlight for more realism
-      ctx.globalAlpha = 0.3;
-      ctx.globalCompositeOperation = 'lighten';
-      
-      // Simple highlight effect
-      ctx.beginPath();
-      for (let i = 0; i < outerPoints.length / 2; i++) {
-        const pointIdx = outerPoints[i];
-        const [x, y] = keypoints[pointIdx];
-        
-        if (i === 0) {
-          ctx.moveTo(canvas.width - x, y);
-        } else {
-          ctx.lineTo(canvas.width - x, y);
-        }
-      }
-      ctx.strokeStyle = 'white';
-      ctx.lineWidth = 1;
-      ctx.stroke();
       
       ctx.restore();
     }
@@ -457,7 +422,7 @@
     
     // Initialize the app
     init();
-    alert("aaaa");
+    alert("bb");
   </script>
 </body>
 </html>
