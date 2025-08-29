@@ -2,19 +2,29 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Real-time Lipstick Try-On with Three.js</title>
+  <title>Advanced Virtual Lipstick Try-On</title>
   <style>
-    body { margin: 0; overflow: hidden; }
-    canvas { display: block; }
+    body { margin: 0; overflow: hidden; background: #000; }
+    #videoElement { display: none; }
+    #colorPickerContainer {
+      position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+      z-index: 10; background: rgba(255,255,255,0.8); padding: 10px;
+      border-radius: 10px;
+    }
   </style>
 </head>
 <body>
-  <video id="video" autoplay playsinline muted style="display:none;"></video>
+  <video id="videoElement" autoplay muted playsinline></video>
+  <div id="colorPickerContainer">
+    <label for="lipColor">Lipstick Color: </label>
+    <input type="color" id="lipColor" value="#d61f26" />
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/three@0.153.0/build/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh"></script>
   <script src="app.js"></script>
-  <script>alert('v5');</script>
+  <script>alert('v6');</script>
 </body>
 </html>
