@@ -260,7 +260,7 @@
     <!-- TensorFlow.js and FaceMesh -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-landmarks-detection"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh"></script>
 
     <script>
         // DOM Elements
@@ -297,11 +297,8 @@
                 await tf.setBackend('webgl');
                 console.log('TensorFlow backend loaded:', tf.getBackend());
                 
-                // Load the face landmarks detection model
-                model = await faceLandmarksDetection.load(
-                    faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh,
-                    { maxFaces: 1 }
-                );
+                // Load the facemesh model (original stable version)
+                model = await facemesh.load({ maxFaces: 1 });
                 console.log('Face detection model loaded');
                 
                 // Set up camera
@@ -373,15 +370,11 @@
             
             if (model) {
                 try {
-                    // Estimate faces
-                    const predictions = await model.estimateFaces({
-                        input: video,
-                        returnTensors: false,
-                        flipHorizontal: false
-                    });
+                    // Estimate faces with the facemesh model
+                    const predictions = await model.estimateFaces(video, false);
                     
                     if (predictions.length > 0) {
-                        const keypoints = predictions[0].keypoints;
+                        const keypoints = predictions[0].scaledMesh;
                         
                         // Draw lipstick overlay
                         drawLipsOverlay(keypoints, currentLipColor);
@@ -421,7 +414,7 @@
             ctx.beginPath();
             for (let i = 0; i < points.length; i++) {
                 const pointIdx = points[i];
-                const {x, y} = keypoints[pointIdx];
+                const [x, y] = keypoints[pointIdx];
                 
                 if (i === 0) {
                     ctx.moveTo(canvas.width - x, y);
@@ -516,7 +509,7 @@
         
         // Initialize the app
         init();
-        alert("c");
+        alert('d');
     </script>
 </body>
 </html>
