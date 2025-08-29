@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Real-time Jewelry Chain Try-On</title>
+  <title>Real-time Jewelry Chain Try-On with Face Tracking</title>
   <style>
     body, html {
       margin: 0; padding: 0; overflow: hidden; height: 100%;
@@ -10,7 +10,7 @@
     }
     #videoElement {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover; z-index: 0;
-      transform: scaleX(-1); /* Mirror for natural selfie effect */
+      transform: scaleX(-1);
     }
     canvas {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1;
@@ -20,6 +20,11 @@
 </head>
 <body>
   <video id="videoElement" autoplay playsinline></video>
+
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh"></script>
+
   <script src="https://cdn.jsdelivr.net/npm/three@0.153.0/build/three.min.js"></script>
   <script src="app.js"></script>
 </body>
