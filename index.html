@@ -2,42 +2,462 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Lipstick Try-On Debug Version</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Professional Lipstick Try-On</title>
   <style>
-    body, html {
-      margin: 0; padding: 0; overflow: hidden; height: 100vh;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      background: #222;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
+    
+    body, html {
+      overflow: hidden;
+      height: 100vh;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #1a1a1a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+    
+    .container {
+      position: relative;
+      width: 100%;
+      max-width: 800px;
+      height: 80vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
     #videoElement, #canvas {
-      position: absolute; top: 0; left: 0;
-      width: 100vw; height: 100vh;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       object-fit: cover;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
       transform: scaleX(-1); /* mirror for selfie view */
     }
-    #controls {
-      position: relative; z-index: 10; margin-top: 480px;
-      display: flex; justify-content: center; width: 100%;
+    
+    #canvas {
+      z-index: 2;
     }
-    input[type=color] {
-      width: 300px;
+    
+    .loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 5;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 20px;
+      border-radius: 10px;
+    }
+    
+    .spinner {
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top: 4px solid #e4002b;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 15px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .controls {
+      position: relative;
+      z-index: 10;
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 20px;
+      border-radius: 12px;
+    }
+    
+    .color-picker {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    
+    .color-option {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 3px solid transparent;
+      transition: all 0.2s ease;
+    }
+    
+    .color-option.active {
+      border-color: white;
+      transform: scale(1.1);
+    }
+    
+    .custom-color {
+      display: flex;
+      align-items: center;
+      margin-top: 10px;
+    }
+    
+    #lipColor {
+      width: 60px;
       height: 40px;
       border: none;
+      border-radius: 8px;
       cursor: pointer;
+      margin-right: 10px;
+    }
+    
+    .instructions {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 14px;
+      opacity: 0.8;
+    }
+    
+    .error-message {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.8);
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      z-index: 20;
+      display: none;
+    }
+    
+    .try-again-btn {
+      margin-top: 15px;
+      padding: 8px 16px;
+      background: #e4002b;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
-  <video id="videoElement" autoplay playsinline muted></video>
-  <canvas id="canvas"></canvas>
-  <div id="controls">
-    <input type="color" id="lipColor" value="#e4002b" />
+  <div class="container">
+    <video id="videoElement" autoplay playsinline muted></video>
+    <canvas id="canvas"></canvas>
+    
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <p>Loading face detection model...</p>
+      <p>Please allow camera access when prompted</p>
+    </div>
+    
+    <div class="error-message" id="errorMessage">
+      <h3>Camera Error</h3>
+      <p id="errorText"></p>
+      <button class="try-again-btn" id="tryAgain">Try Again</button>
+    </div>
+  </div>
+  
+  <div class="controls">
+    <div class="color-picker">
+      <div class="color-option active" style="background-color: #e4002b;" data-color="#e4002b"></div>
+      <div class="color-option" style="background-color: #9d0b42;" data-color="#9d0b42"></div>
+      <div class="color-option" style="background-color: #ff6b9d;" data-color="#ff6b9d"></div>
+      <div class="color-option" style="background-color: #d9004c;" data-color="#d9004c"></div>
+      <div class="color-option" style="background-color: #7c0029;" data-color="#7c0029"></div>
+      <div class="color-option" style="background-color: #ff3e6b;" data-color="#ff3e6b"></div>
+    </div>
+    
+    <div class="custom-color">
+      <input type="color" id="lipColor" value="#e4002b" />
+      <label for="lipColor">Custom Color</label>
+    </div>
+    
+    <div class="instructions">
+      <p>Position your face in the frame and select a lipstick color</p>
+    </div>
   </div>
 
+  <!-- TensorFlow.js and FaceMesh -->
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh"></script>
-  <script src="app.js"></script>
-  <script>alert('v10');</script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-landmarks-detection"></script>
+
+  <script>
+    // DOM Elements
+    const video = document.getElementById('videoElement');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const lipColorPicker = document.getElementById('lipColor');
+    const loadingElement = document.getElementById('loading');
+    const errorMessage = document.getElementById('errorMessage');
+    const errorText = document.getElementById('errorText');
+    const tryAgainBtn = document.getElementById('tryAgain');
+    const colorOptions = document.querySelectorAll('.color-option');
+    
+    // State variables
+    let model = null;
+    let isProcessing = false;
+    let currentLipColor = '#e4002b';
+    
+    // Predefined lip landmarks indices for FaceMesh
+    const LIP_TOP = {
+      outer: [61, 185, 40, 39, 37, 0, 267, 269, 270, 409, 291],
+      inner: [78, 191, 80, 81, 82, 13, 312, 311, 310, 415, 308]
+    };
+    
+    const LIP_BOTTOM = {
+      outer: [146, 91, 181, 84, 17, 314, 405, 320, 307, 375, 321],
+      inner: [95, 88, 178, 87, 14, 317, 402, 318, 324, 308, 415]
+    };
+    
+    // Initialize the application
+    async function init() {
+      try {
+        // Set up TensorFlow.js backend
+        await tf.setBackend('webgl');
+        
+        // Load the face landmarks detection model
+        model = await faceLandmarksDetection.load(
+          faceLandmarksDetection.SupportedPackages.mediapipeFacemesh,
+          { maxFaces: 1 }
+        );
+        
+        // Set up camera
+        await setupCamera();
+        
+        // Hide loading indicator
+        loadingElement.style.display = 'none';
+        
+        // Start the rendering loop
+        renderPrediction();
+      } catch (error) {
+        showError('Failed to initialize: ' + error.message);
+      }
+    }
+    
+    // Set up camera
+    async function setupCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { 
+            facingMode: 'user', 
+            width: { ideal: 640 }, 
+            height: { ideal: 480 } 
+          },
+          audio: false
+        });
+        
+        video.srcObject = stream;
+        
+        return new Promise((resolve) => {
+          video.onloadedmetadata = () => {
+            // Set canvas dimensions to match video
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            video.play();
+            resolve(video);
+          };
+        });
+      } catch (error) {
+        showError('Camera access denied or unavailable. Please allow camera permissions and reload.');
+        console.error('Camera error:', error);
+        throw error;
+      }
+    }
+    
+    // Main rendering function
+    async function renderPrediction() {
+      if (isProcessing) return;
+      
+      isProcessing = true;
+      
+      // Clear canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw video frame to canvas
+      ctx.save();
+      ctx.scale(-1, 1);
+      ctx.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
+      ctx.restore();
+      
+      if (model) {
+        try {
+          // Estimate faces
+          const predictions = await model.estimateFaces({
+            input: video,
+            returnTensors: false,
+            flipHorizontal: false,
+            predictIrises: true
+          });
+          
+          if (predictions.length > 0) {
+            const keypoints = predictions[0].scaledMesh;
+            
+            // Draw lipstick overlay
+            drawLipsOverlay(keypoints, currentLipColor);
+          }
+        } catch (error) {
+          console.error('Prediction error:', error);
+        }
+      }
+      
+      isProcessing = false;
+      requestAnimationFrame(renderPrediction);
+    }
+    
+    // Draw lipstick overlay
+    function drawLipsOverlay(keypoints, color) {
+      // Draw upper lip
+      drawLipSection(keypoints, LIP_TOP.outer, LIP_TOP.inner, color);
+      
+      // Draw lower lip
+      drawLipSection(keypoints, LIP_BOTTOM.outer, LIP_BOTTOM.inner, color);
+    }
+    
+    // Draw a lip section (upper or lower)
+    function drawLipSection(keypoints, outerPoints, innerPoints, color) {
+      ctx.save();
+      
+      // Create a gradient for more realistic lips
+      const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+      gradient.addColorStop(0, color);
+      gradient.addColorStop(1, adjustColorBrightness(color, -20));
+      
+      ctx.fillStyle = gradient;
+      ctx.globalAlpha = 0.7;
+      ctx.globalCompositeOperation = 'source-over';
+      
+      // Draw outer lip path
+      ctx.beginPath();
+      for (let i = 0; i < outerPoints.length; i++) {
+        const pointIdx = outerPoints[i];
+        const [x, y] = keypoints[pointIdx];
+        
+        if (i === 0) {
+          ctx.moveTo(canvas.width - x, y);
+        } else {
+          ctx.lineTo(canvas.width - x, y);
+        }
+      }
+      
+      // Draw inner lip path (in reverse)
+      for (let i = innerPoints.length - 1; i >= 0; i--) {
+        const pointIdx = innerPoints[i];
+        const [x, y] = keypoints[pointIdx];
+        ctx.lineTo(canvas.width - x, y);
+      }
+      
+      ctx.closePath();
+      ctx.fill();
+      
+      // Add a highlight for more realism
+      ctx.globalAlpha = 0.3;
+      ctx.globalCompositeOperation = 'lighten';
+      
+      // Simple highlight effect
+      ctx.beginPath();
+      for (let i = 0; i < outerPoints.length / 2; i++) {
+        const pointIdx = outerPoints[i];
+        const [x, y] = keypoints[pointIdx];
+        
+        if (i === 0) {
+          ctx.moveTo(canvas.width - x, y);
+        } else {
+          ctx.lineTo(canvas.width - x, y);
+        }
+      }
+      ctx.strokeStyle = 'white';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      
+      ctx.restore();
+    }
+    
+    // Utility function to adjust color brightness
+    function adjustColorBrightness(hex, percent) {
+      // Parse the hex color
+      let r = parseInt(hex.substring(1, 3), 16);
+      let g = parseInt(hex.substring(3, 5), 16);
+      let b = parseInt(hex.substring(5, 7), 16);
+      
+      // Adjust brightness
+      r = Math.max(0, Math.min(255, r + r * (percent / 100)));
+      g = Math.max(0, Math.min(255, g + g * (percent / 100)));
+      b = Math.max(0, Math.min(255, b + b * (percent / 100)));
+      
+      // Convert back to hex
+      return '#' + 
+        Math.round(r).toString(16).padStart(2, '0') + 
+        Math.round(g).toString(16).padStart(2, '0') + 
+        Math.round(b).toString(16).padStart(2, '0');
+    }
+    
+    // Show error message
+    function showError(message) {
+      errorText.textContent = message;
+      errorMessage.style.display = 'block';
+      loadingElement.style.display = 'none';
+    }
+    
+    // Event Listeners
+    lipColorPicker.addEventListener('input', (e) => {
+      currentLipColor = e.target.value;
+      
+      // Update active color option
+      colorOptions.forEach(option => {
+        option.classList.remove('active');
+      });
+    });
+    
+    // Color option click handler
+    colorOptions.forEach(option => {
+      option.addEventListener('click', () => {
+        currentLipColor = option.getAttribute('data-color');
+        lipColorPicker.value = currentLipColor;
+        
+        // Update active class
+        colorOptions.forEach(opt => opt.classList.remove('active'));
+        option.classList.add('active');
+      });
+    });
+    
+    // Try again button
+    tryAgainBtn.addEventListener('click', () => {
+      errorMessage.style.display = 'none';
+      loadingElement.style.display = 'block';
+      init();
+    });
+    
+    // Handle window resize
+    window.addEventListener('resize', () => {
+      if (video.videoWidth && video.videoHeight) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+      }
+    });
+    
+    // Initialize the app
+    init();
+    alert("aaaa");
+  </script>
 </body>
 </html>
