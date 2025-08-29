@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Camera Access Test</title>
+</head>
+<body>
+  <video id="video" autoplay playsinline muted width="640" height="480" style="background:#000;"></video>
+  <script>
+    async function startCamera() {
+      try {
+        const video = document.getElementById('video');
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+        await new Promise((r) => (video.onloadedmetadata = r));
+        video.play();
+        console.log('Camera started');
+      } catch (e) {
+        alert('Camera access failed: ' + e.message);
+        console.error(e);
+      }
+    }
+    startCamera();
+  </script>
+</body>
+</html>
