@@ -2,31 +2,37 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Real-time Jewelry Chain Try-On with Face Tracking</title>
+  <title>Real-time Lipstick Try-On</title>
   <style>
     body, html {
-      margin: 0; padding: 0; overflow: hidden; height: 100%;
-      display: flex; justify-content: center; align-items: center; background: #000;
+      margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #222;
     }
-    #videoElement {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover; z-index: 0;
+    canvas, video {
+      position: absolute; top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      object-fit: cover;
       transform: scaleX(-1);
     }
-    canvas {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1;
-      pointer-events: none;
+    #controls {
+      position: relative; z-index: 10; margin-top: 520px;
+      display: flex; justify-content: center; width: 100%;
+    }
+    input[type=range] {
+      width: 300px;
     }
   </style>
 </head>
 <body>
-  <video id="videoElement" autoplay playsinline></video>
+  <video id="videoElement" autoplay playsinline muted></video>
+  <canvas id="canvas"></canvas>
+  <div id="controls">
+    <input type="color" id="lipColor" value="#e4002b" />
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh"></script>
-
-  <script src="https://cdn.jsdelivr.net/npm/three@0.153.0/build/three.min.js"></script>
   <script src="app.js"></script>
-  <script>alert('v3');</script>
+  <script>alert('v4');</script>
 </body>
 </html>
