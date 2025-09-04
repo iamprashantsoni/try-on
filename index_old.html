@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Lipstick Try-On with Backend Init</title>
+  <title>Lipstick Try-On (Fixed)</title>
   <style>
     html, body {
       margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden; background: #222;
@@ -15,8 +15,9 @@
       z-index: 0;
     }
     #controls {
-      position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+      position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%);
       z-index: 10; background: rgba(255,255,255, 0.85); padding: 10px 20px; border-radius: 8px;
+      display: flex; align-items: center;
     }
     #lipColor {
       width: 50px; height: 40px;
@@ -30,17 +31,14 @@
   <canvas id="canvas"></canvas>
   <div id="controls">
     <label for="lipColor">Lipstick Color: </label>
-    <input type="color" id="lipColor" value="#e4002b" />
+    <input type="color" id="lipColor" value="#e4002b">
   </div>
-
-  <!-- TensorFlow.js core and backend-webgl -->
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.21.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core@3.21.0/dist/tf-core.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl@3.21.0/dist/tf-backend-webgl.min.js"></script>
-
-  <!-- FaceMesh Model -->
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh@0.0.4/dist/facemesh.min.js"></script>
-
   <script src="app.js"></script>
-  <script>alert('z');</script>
+  <script>
+    alert('l');
+  </script>
 </body>
 </html>
