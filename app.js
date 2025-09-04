@@ -34,20 +34,34 @@ async function loadFacemesh() {
   facemeshModel = await facemesh.load();
 }
 
+let videoTexture, videoMesh;
+
 function initThree() {
   renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
   renderer.setSize(640, 480);
-  renderer.setClearColor(0x000000, 0); // Transparent background
+  renderer.setClearColor(0x000000, 0); // transparent background
 
   scene = new THREE.Scene();
 
   camera = new THREE.OrthographicCamera(0, 640, 480, 0, -1000, 1000);
   camera.position.z = 1;
 
-  // Initialize lips mesh as empty geometry, will update each frame
-  const geometry = new THREE.BufferGeometry();
+  // Create video texture for webcam feed
+  videoTexture = new THREE.VideoTexture(video);
+  videoTexture.minFilter = THREE.LinearFilter;
+  videoTexture.magFilter = THREE.LinearFilter;
+  videoTexture.format = THREE.RGBAFormat;
 
-  // Material: Simple matte transparent lipstick color
+  // Create plane geometry with same size as video to display camera feed
+  const videoGeometry = new THREE.PlaneGeometry(640, 480);
+  const videoMaterial = new THREE.MeshBasicMaterial({ map: videoTexture });
+  videoMesh = new THREE.Mesh(videoGeometry, videoMaterial);
+  // Position so top-left corner aligns with Three.js coordinate start (0,480)
+  videoMesh.position.set(640/2, 480/2, -1);  // Behind lipstick mesh
+  scene.add(videoMesh);
+
+  // Lips mesh (same as before)
+  const geometry = new THREE.BufferGeometry();
   const material = new THREE.MeshBasicMaterial({
     color: lipColor,
     transparent: true,
@@ -55,7 +69,6 @@ function initThree() {
     side: THREE.DoubleSide,
     depthWrite: false,
   });
-
   lipsMesh = new THREE.Mesh(geometry, material);
   scene.add(lipsMesh);
 }
@@ -107,6 +120,10 @@ function updateLipsMesh(scaledMesh) {
 }
 
 async function renderLoop() {
+  if (video.readyState >= 2) {
+    videoTexture.needsUpdate = true;  // Important: update texture each frame
+  }
+
   const predictions = await facemeshModel.estimateFaces(video, false);
 
   if (predictions.length > 0 && predictions[0].scaledMesh) {
