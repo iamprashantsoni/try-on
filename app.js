@@ -135,6 +135,9 @@ async function main() {
 
   async function renderFrame() {
     alert('renderFrame');
+    alert('Canvas width:', canvas.width, 'Canvas height:', canvas.height);
+    alert('Video videoWidth:', video.videoWidth, 'videoHeight:', video.videoHeight);
+    alert('Video readyState:', video.readyState);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
