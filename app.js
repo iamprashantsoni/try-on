@@ -14,7 +14,7 @@ lipColorPicker.addEventListener('input', () => {
 });
 
 async function setupCamera() {
-  alert('setupCamera');
+  // alert('setupCamera');
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: 'user', width: 640, height: 480 },
@@ -34,7 +34,7 @@ async function setupCamera() {
 }
 
 function resizeCanvasToVideo() {
-  alert('resizeCanvasToVideo');
+  // alert('resizeCanvasToVideo');
   if (video.videoWidth && video.videoHeight) {
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
@@ -43,7 +43,7 @@ function resizeCanvasToVideo() {
 
 // STEP 1: Debug function to see if image/video drawing happens
 function testDrawBG() {
-  alert('testDrawBG');
+  // alert('testDrawBG');
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = '#AAAAFF';
   ctx.fillRect(10, 10, 50, 50);
@@ -52,7 +52,7 @@ function testDrawBG() {
 
 // STEP 2: Debug draw green dots for all face keypoints, blue dots for lips only
 function debugDrawDots(keypoints) {
-  alert('debugDrawDots');
+  // alert('debugDrawDots');
   // draw all points small, lips larger
   ctx.save();
   ctx.fillStyle = "#00FF00";
@@ -74,7 +74,7 @@ function debugDrawDots(keypoints) {
 
 // STEP 3: Debug polygon drawing, logs and outline
 function drawLipsOverlay(ctx, keypoints, color) {
-  alert('drawLipsOverlay');
+  // alert('drawLipsOverlay');
   ctx.save();
   ctx.globalAlpha = 0.7;
   ctx.fillStyle = color;
@@ -106,12 +106,12 @@ function drawLipsOverlay(ctx, keypoints, color) {
 }
 
 async function main() {
-  alert('main');
+  // alert('main');
   await setupCamera();
 
   // Wait for video size and resize canvas
   function checkVideoReady() {
-    alert('checkVideoReady');
+    // alert('checkVideoReady');
     return new Promise(resolve => {
       function tryReady() {
         if (video.readyState >= 2 && video.videoWidth > 0) {
@@ -134,10 +134,10 @@ async function main() {
   console.log("FaceMesh model loaded!");
 
   async function renderFrame() {
-    alert('renderFrame');
-    alert('Canvas width:', canvas.width, 'Canvas height:', canvas.height);
-    alert('Video videoWidth:', video.videoWidth, 'videoHeight:', video.videoHeight);
-    alert('Video readyState:', video.readyState);
+    // alert('renderFrame');
+    // alert('Canvas width:', canvas.width, 'Canvas height:', canvas.height);
+    // alert('Video videoWidth:', video.videoWidth, 'videoHeight:', video.videoHeight);
+    // alert('Video readyState:', video.readyState);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
@@ -159,5 +159,5 @@ async function main() {
 }
 
 window.addEventListener('resize', resizeCanvasToVideo);
-alert('finish');
+// alert('finish');
 main();
