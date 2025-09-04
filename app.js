@@ -45,7 +45,8 @@ function resizeCanvasToVideo() {
 function drawLipsOverlay(ctx, keypoints, color) {
   ctx.save();
   ctx.fillStyle = color;
-  ctx.globalAlpha = 0.6;
+  ctx.globalAlpha = 0.8; // more visible
+
   ctx.beginPath();
   outerLips.forEach((pointIdx, i) => {
     const [x, y] = keypoints[pointIdx];
@@ -57,18 +58,22 @@ function drawLipsOverlay(ctx, keypoints, color) {
   });
   ctx.closePath();
   ctx.fill();
-  ctx.globalAlpha = 1.0;
 
-  // DEBUG: draw points
-  /*
-  ctx.fillStyle = "#00ff00";
+  // Draw a blue outline for debugging
+  ctx.globalAlpha = 1.0;
+  ctx.strokeStyle = "#0000FF";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Optional: draw dots for each point, for high-visibility debugging
+  ctx.fillStyle = "#00FF00";
   outerLips.forEach((pointIdx) => {
     const [x, y] = keypoints[pointIdx];
     ctx.beginPath();
-    ctx.arc(x, y, 2, 0, 2 * Math.PI);
+    ctx.arc(x, y, 2.5, 0, 2 * Math.PI);
     ctx.fill();
   });
-  */
+
   ctx.restore();
 }
 
