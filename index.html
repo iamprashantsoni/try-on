@@ -1,46 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Lipstick Try-On with Backend Init</title>
-  <style>
-    html, body {
-      margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden; background: #222;
-    }
-    #videoElement, #canvas {
-      position: absolute; top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      object-fit: cover;
-      transform: scaleX(-1);
-      z-index: 0;
-    }
-    #controls {
-      position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-      z-index: 10; background: rgba(255,255,255, 0.85); padding: 10px 20px; border-radius: 8px;
-    }
-    #lipColor {
-      width: 50px; height: 40px;
-      border: none; margin-left: 8px; padding: 0; cursor: pointer;
-      background: none;
-    }
-  </style>
+<meta charset="UTF-8" />
+<title>Virtual Lipstick Try-On</title>
+<style>
+  body, html {
+    margin: 0; padding: 0; overflow: hidden; height: 100vh; background: #222;
+    display: flex; flex-direction: column; align-items: center;
+  }
+  #container {
+    position: relative; width: 640px; height: 480px;
+  }
+  canvas {
+    position: absolute; top: 0; left: 0;
+    width: 640px; height: 480px;
+    background: transparent;
+  }
+  #colorPicker {
+    margin-top: 10px;
+    width: 120px;
+    height: 36px;
+    cursor: pointer;
+  }
+</style>
 </head>
 <body>
-  <video id="videoElement" autoplay playsinline muted></video>
-  <canvas id="canvas"></canvas>
-  <div id="controls">
-    <label for="lipColor">Lipstick Color: </label>
-    <input type="color" id="lipColor" value="#e4002b" />
+  <div id="container">
+    <video id="video" width="640" height="480" autoplay playsinline muted style="display:none;"></video>
+    <canvas id="webglCanvas" width="640" height="480"></canvas>
   </div>
-
-  <!-- TensorFlow.js core and backend-webgl -->
+  <input type="color" id="colorPicker" value="#d61f26" title="Choose Lipstick Color" />
+  
+  <!-- TensorFlow.js core and backend -->
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.21.0/dist/tf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl@3.21.0/dist/tf-backend-webgl.min.js"></script>
-
-  <!-- FaceMesh Model -->
+  
+  <!-- MediaPipe FaceMesh -->
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh@0.0.4/dist/facemesh.min.js"></script>
 
+  <!-- Three.js -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.153.0/build/three.min.js"></script>
+  
+  <!-- Main app script -->
   <script src="app.js"></script>
-  <script>alert('z');</script>
+  <script>alert(1);</script>
 </body>
 </html>
