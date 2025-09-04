@@ -3,6 +3,12 @@ const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 const lipColorPicker = document.getElementById('lipColor');
 
+// Outer lip indices for FaceMesh
+const outerLips = [
+  61, 146, 91, 181, 84, 17, 314, 405,
+  321, 375, 291, 308, 324, 318, 402, 317,
+];
+
 async function setupCamera() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
@@ -18,24 +24,20 @@ async function setupCamera() {
     });
   } catch (err) {
     alert('Camera access denied or unavailable. Please allow camera permissions and reload.');
-    console.error(err);
+    throw err;
   }
 }
 
-function resizeCanvas() {
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
+function resizeCanvasToVideo() {
+  if (video.videoWidth && video.videoHeight) {
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+  }
 }
 
 function drawLipsOverlay(ctx, keypoints, color) {
-  const outerLips = [
-    61, 146, 91, 181, 84, 17, 314, 405,
-    321, 375, 291, 308, 324, 318, 402, 317,
-  ];
-
   ctx.fillStyle = color;
   ctx.globalAlpha = 0.6;
-
   ctx.beginPath();
   outerLips.forEach((pointIdx, i) => {
     const [x, y] = keypoints[pointIdx];
@@ -47,40 +49,50 @@ function drawLipsOverlay(ctx, keypoints, color) {
   });
   ctx.closePath();
   ctx.fill();
-
   ctx.globalAlpha = 1.0;
 }
 
 async function main() {
   await setupCamera();
-  resizeCanvas();
+
+  // Wait for video to be ready and set canvas size
+  function checkVideoReady() {
+    return new Promise((resolve) => {
+      function tryReady() {
+        if (video.readyState >= 2 && video.videoWidth > 0) {
+          resizeCanvasToVideo();
+          resolve();
+        } else {
+          setTimeout(tryReady, 50);
+        }
+      }
+      tryReady();
+    });
+  }
+  await checkVideoReady();
 
   const model = await facemesh.load();
 
   async function renderFrame() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    // Only draw when video and canvas have dimensions
+    if (video.readyState >= 2 && canvas.width > 0 && canvas.height > 0) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    const predictions = await model.estimateFaces(video, false);
-    console.log('Predictions count:', predictions.length);
-
-    if (predictions.length > 0) {
-      const keypoints = predictions[0].scaledMesh;
-      console.log('Sample lip landmark:', keypoints[61]);
-      drawLipsOverlay(ctx, keypoints, lipColorPicker.value);
-    } else {
-      // No face detected, optionally clear overlay
-      // ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const predictions = await model.estimateFaces(video, false);
+      if (predictions.length > 0 && predictions[0].scaledMesh) {
+        drawLipsOverlay(ctx, predictions[0].scaledMesh, lipColorPicker.value);
+      }
     }
-
     requestAnimationFrame(renderFrame);
   }
 
   renderFrame();
 }
 
-main();
-
+// On window resize, adjust canvas to video size
 window.addEventListener('resize', () => {
-  resizeCanvas();
+  resizeCanvasToVideo();
 });
+
+main();
